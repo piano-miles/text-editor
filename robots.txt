@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://git.mileswaugh.com/text-editor/sitemap.xml

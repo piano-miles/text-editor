@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+
+<html data-theme="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+    <title>Minimal Text Editor</title>
+    <meta name="description"
+        content="A fast, minimal in-browser text editor with live stats, copy/download actions, and a light/dark theme." />
+    <meta name="robots" content="index,follow" />
+
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
+
+    <link rel="canonical" href="https://git.mileswaugh.com/text-editor/" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Minimal Text Editor" />
+    <meta property="og:description"
+        content="A fast, minimal in-browser text editor with live stats, copy/download actions, and a light/dark theme." />
+    <meta property="og:url" content="https://git.mileswaugh.com/text-editor/" />
+    <meta property="og:image" content="https://git.mileswaugh.com/text-editor/media/og.png" />
+    <meta property="og:locale" content="en_US" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Minimal Text Editor" />
+    <meta name="twitter:description"
+        content="A fast, minimal in-browser text editor with live stats, copy/download actions, and a light/dark theme." />
+    <meta name="twitter:image" content="https://git.mileswaugh.com/text-editor/media/og.png" />
+
+    <link rel="icon" href="media/icon.svg" type="image/svg+xml" />
+    <link rel="icon" href="media/favicon.ico" sizes="any" />
+    <link rel="icon" href="media/favicon-32x32.png" sizes="32x32" type="image/png" />
+    <link rel="icon" href="media/favicon-16x16.png" sizes="16x16" type="image/png" />
+    <link rel="apple-touch-icon" href="media/apple-touch-icon.png" sizes="180x180" />
+
+    <link rel="manifest" href="site.webmanifest" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+    <link rel="stylesheet" href="style.css" />
+
+    <script type="application/ld+json">
+            {
+                "@context": "https://schema.org",
+                "@type": "WebApplication",
+                "name": "Minimal Text Editor",
+                "applicationCategory": "UtilitiesApplication",
+                "operatingSystem": "Any",
+                "url": "https://git.mileswaugh.com/text-editor/",
+                "description": "A fast, minimal in-browser text editor with live stats, copy/download actions, and a light/dark theme."
+            }
+        </script>
+</head>
+
+<body>
+    <main aria-label="Minimal Text Editor" class="app">
+        <section aria-label="Editor" class="editor-card">
+            <header class="editor-header">
+                <h1 class="title">Minimal Text Editor</h1>
+            </header>
+
+            <div aria-hidden="true" class="editor-divider"></div>
+
+            <div aria-label="Text editor" class="editor-wrap">
+                <pre aria-hidden="true" class="editor-highlight" id="highlight"></pre>
+
+                <textarea aria-label="Text editor input" class="editor" id="editor" placeholder="Start typing..."
+                    spellcheck="false"></textarea>
+            </div>
+            <noscript>
+                <div class="noscript" role="status">
+                    This app needs JavaScript enabled to run.
+                </div>
+            </noscript>
+        </section>
+
+        <aside aria-label="Sidebar" class="side">
+            <section aria-label="Stats" class="card stats-card">
+                <h2 class="card-title">Stats</h2>
+
+                <div class="stat-row">
+                    <span class="stat-label">Characters</span>
+                    <span class="stat-value" id="statChars">0</span>
+                </div>
+
+                <div class="stat-row">
+                    <span class="stat-label">Words</span>
+                    <span class="stat-value" id="statWords">0</span>
+                </div>
+
+                <div class="stat-row">
+                    <span class="stat-label">Sentences</span>
+                    <span class="stat-value" id="statSentences">0</span>
+                </div>
+
+                <div class="stat-row">
+                    <span class="stat-label">Paragraphs</span>
+                    <span class="stat-value" id="statParagraphs">0</span>
+                </div>
+
+                <div class="stat-row">
+                    <span class="stat-label">Reading time</span>
+                    <span class="stat-value" id="statReadingTime">0 sec</span>
+                </div>
+            </section>
+
+            <section aria-label="Actions" class="card actions-card">
+                <button aria-label="Copy all text" class="icon-btn" id="btnCopy" title="Copy all" type="button">
+                    <img alt="" height="20" src="media/copy.svg" width="20" />
+                </button>
+                <button aria-label="Download as .txt" class="icon-btn" id="btnDownload" title="Download .txt"
+                    type="button">
+                    <img alt="" height="20" src="media/download.svg" width="20" />
+                </button>
+                <button aria-label="Toggle theme" class="icon-btn" id="btnTheme" title="Toggle theme" type="button">
+                    <img alt="" height="20" id="themeIcon" src="media/moon.svg" width="20" />
+                </button>
+            </section>
+        </aside>
+    </main>
+
+    <div aria-atomic="true" aria-live="polite" class="toast" id="toast" role="status"></div>
+    <script defer src="app.js"></script>
+</body>
+
+</html>
