@@ -5,7 +5,7 @@ const STORAGE_KEY_TEXT = "mte_text_v1";
 const STORAGE_KEY_THEME = "mte_theme_v1";
 const STORAGE_KEY_TITLE = "mte_title_v1";
 
-const $ = (t) => document.getElementById(t);
+const $ = (id) => document.getElementById(id);
 
 const editor = $("editor");
 const highlight = $("highlight");
@@ -28,123 +28,134 @@ let renderPending = false;
 let saveTimer = 0;
 let titleSaveTimer = 0;
 
-function clamp(t, e, n) {
-    return Math.min(n, Math.max(e, t));
+function clamp(v, min, max) {
+    return Math.min(max, Math.max(min, v));
 }
 
-function escapeHTML(t) {
-    return t
+function escapeHTML(s) {
+    return s
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
         .replaceAll(">", "&gt;");
 }
 
-function spacesToDots(t) {
-    const e = '<span class="tok-space">•</span>'.repeat(4);
-    return t
-        .replaceAll("\t", e)
+function spacesToDots(s) {
+    const tab = '<span class="tok-space">•</span>'.repeat(4);
+    return s
+        .replaceAll("\t", tab)
         .replaceAll(" ", '<span class="tok-space">•</span>');
 }
 
-function findCommentIndex(t) {
-    for (let e = 0; e < t.length - 1; e++) {
-        if (t[e] === "/" && t[e + 1] === "/" && ":" !== (t[e - 1] || ""))
-            return e;
+function findCommentIndex(line) {
+    for (let i = 0; i < line.length - 1; i++) {
+        if (
+            line[i] === "/" &&
+            line[i + 1] === "/" &&
+            (line[i - 1] || "") !== ":"
+        )
+            return i;
     }
     return -1;
 }
 
-function getLineClass(t) {
-    const e = t.match(/^(\s*)(.*)$/);
-    const n = e ? e[2] : t;
-    return n.startsWith("#")
+function getLineClass(line) {
+    const m = line.match(/^(\s*)(.*)$/);
+    const core = m ? m[2] : line;
+    return core.startsWith("#")
         ? "tok-hash"
-        : n.startsWith("- ")
+        : core.startsWith("- ")
         ? "tok-minus"
-        : n.startsWith("+ ")
+        : core.startsWith("+ ")
         ? "tok-plus"
-        : /^\[x\]/i.test(n)
+        : /^\[x\]/i.test(core)
         ? "tok-done"
-        : n.startsWith("**")
+        : core.startsWith("**")
         ? "tok-star"
-        : n.startsWith(">")
+        : core.startsWith(">")
         ? "tok-quote"
         : "";
 }
 
-function countWords(t) {
-    const e = t.trim();
-    if (!e) return 0;
+function countWords(text) {
+    const t = text.trim();
+    if (!t) return 0;
     if (typeof Intl !== "undefined" && Intl.Segmenter) {
-        const t = new Intl.Segmenter(void 0, {
+        const seg = new Intl.Segmenter(void 0, {
             granularity: "word",
         });
         let n = 0;
-        for (const o of t.segment(e)) if (o.isWordLike) n++;
+        for (const part of seg.segment(t)) if (part.isWordLike) n++;
         return n;
     }
-    const n = e.match(/[A-Za-z0-9]+(?:'[A-Za-z0-9]+)*/g);
-    return n ? n.length : 0;
+    const m = t.match(/[A-Za-z0-9]+(?:'[A-Za-z0-9]+)*/g);
+    return m ? m.length : 0;
 }
 
-function countSentences(t) {
-    const e = t.trim();
-    if (!e) return 0;
-    const n = e.match(/[.!?]+(?=\s|$)/g);
-    return n ? n.length : 0;
+function countSentences(text) {
+    const t = text.trim();
+    if (!t) return 0;
+    const m = t.match(/[.!?]+(?=\s|$)/g);
+    return m ? m.length : 0;
 }
 
-function countParagraphs(t) {
-    const e = t.trim();
-    return e ? e.split(/\n\s*\n+/).length : 0;
+function countParagraphs(text) {
+    const t = text.trim();
+    return t ? t.split(/\n\s*\n+/).length : 0;
 }
 
-function formatDurationSeconds(t) {
-    const e = Math.max(0, Math.round(t));
-    if (e < 60) return `${e} sec`;
-    const n = Math.floor(e / 3600);
-    const o = Math.floor((e % 3600) / 60);
-    const i = e % 60;
-    return n > 0
-        ? `${n} hr ${String(o).padStart(2, "0")} min ${String(i).padStart(
+function formatDurationSeconds(sec) {
+    const s = Math.max(0, Math.round(sec));
+    if (s < 60) return `${s} sec`;
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    const r = s % 60;
+    return h > 0
+        ? `${h} hr ${String(m).padStart(2, "0")} min ${String(r).padStart(
               2,
               "0"
           )} sec`
-        : `${o} min ${i} sec`;
+        : `${m} min ${r} sec`;
 }
 
 function updateStats() {
     if (!editor) return;
     const t = editor.value;
     if (statChars) statChars.textContent = String(t.length);
-    const e = countWords(t);
-    if (statWords) statWords.textContent = String(e);
+    const w = countWords(t);
+    if (statWords) statWords.textContent = String(w);
     if (statSentences) statSentences.textContent = String(countSentences(t));
     if (statParagraphs) statParagraphs.textContent = String(countParagraphs(t));
-    const n = (e / WPM) * 60;
-    if (statReadingTime) statReadingTime.textContent = formatDurationSeconds(n);
+    const secs = (w / WPM) * 60;
+    if (statReadingTime)
+        statReadingTime.textContent = formatDurationSeconds(secs);
 }
 
-function renderHighlightText(t) {
+function renderHighlightText(text) {
     if (!highlight) return;
-    if (!t) {
+    if (!text) {
         highlight.innerHTML = "";
         return;
     }
-    const e = t.split("\n");
-    const n = [];
-    for (const t of e) {
-        const e = findCommentIndex(t);
-        const o = e >= 0 ? t.slice(0, e) : t;
-        const i = e >= 0 ? t.slice(e) : "";
-        const a = getLineClass(o);
-        const r = spacesToDots(escapeHTML(o));
-        const s = i
-            ? `<span class="tok-comment">${spacesToDots(escapeHTML(i))}</span>`
+    const lines = text.split("\n");
+    const out = [];
+    for (const line of lines) {
+        const ci = findCommentIndex(line);
+        const left = ci >= 0 ? line.slice(0, ci) : line;
+        const right = ci >= 0 ? line.slice(ci) : "";
+        const cls = getLineClass(left);
+        const leftHtml = spacesToDots(escapeHTML(left));
+        const rightHtml = right
+            ? `<span class="tok-comment">${spacesToDots(
+                  escapeHTML(right)
+              )}</span>`
             : "";
-        n.push(a ? `<span class="${a}">${r}</span>${s}` : `${r}${s}`);
+        out.push(
+            cls
+                ? `<span class="${cls}">${leftHtml}</span>${rightHtml}`
+                : `${leftHtml}${rightHtml}`
+        );
     }
-    highlight.innerHTML = n.join("\n");
+    highlight.innerHTML = out.join("\n");
 }
 
 function syncScroll() {
@@ -154,8 +165,7 @@ function syncScroll() {
 }
 
 function scheduleRender() {
-    if (!editor) return;
-    if (renderPending) return;
+    if (!editor || renderPending) return;
     renderPending = true;
     requestAnimationFrame(() => {
         renderPending = false;
@@ -165,24 +175,25 @@ function scheduleRender() {
     });
 }
 
-function showToast(t, e, n = 1100) {
-    if (!toast || !e) return;
-    toast.textContent = t;
+function showToast(text, anchorEl, duration = 1100) {
+    if (!toast || !anchorEl) return;
+    toast.textContent = text;
     toast.classList.add("show");
-    const o = e.getBoundingClientRect();
-    const i = toast.getBoundingClientRect();
-    const a = window.scrollX || document.documentElement.scrollLeft || 0;
-    const r = window.scrollY || document.documentElement.scrollTop || 0;
-    const s = r + o.top - i.height - 8;
-    const l = a + o.left + o.width / 2 - i.width / 2;
-    const c = clamp(s, r + 8, r + window.innerHeight - i.height - 8);
-    const d = clamp(l, a + 8, a + window.innerWidth - i.width - 8);
-    toast.style.top = `${c}px`;
-    toast.style.left = `${d}px`;
+    const a = anchorEl.getBoundingClientRect();
+    const b = toast.getBoundingClientRect();
+    const sx = window.scrollX || document.documentElement.scrollLeft || 0;
+    const sy = window.scrollY || document.documentElement.scrollTop || 0;
+    const top = sy + a.top - b.height - 8;
+    const left = sx + a.left + a.width / 2 - b.width / 2;
+    const t = clamp(top, sy + 8, sy + window.innerHeight - b.height - 8);
+    const l = clamp(left, sx + 8, sx + window.innerWidth - b.width - 8);
+    toast.style.top = `${t}px`;
+    toast.style.left = `${l}px`;
     window.clearTimeout(toastTimer);
-    toastTimer = window.setTimeout(() => {
-        toast.classList.remove("show");
-    }, n);
+    toastTimer = window.setTimeout(
+        () => toast.classList.remove("show"),
+        duration
+    );
 }
 
 async function copyAll() {
@@ -199,12 +210,12 @@ async function copyAll() {
         try {
             editor.focus();
             editor.select();
-            const t = document.execCommand("copy");
+            const ok = document.execCommand("copy");
             editor.setSelectionRange(
                 editor.selectionStart,
                 editor.selectionEnd
             );
-            showToast(t ? "Copied!" : "Copy failed", btnCopy);
+            showToast(ok ? "Copied!" : "Copy failed", btnCopy);
         } catch {
             showToast("Copy failed", btnCopy);
         }
@@ -222,9 +233,9 @@ function onNativeCopy() {
     );
 }
 
-function sanitizeFilenameBase(t) {
+function sanitizeFilenameBase(s) {
     return (
-        String(t || "")
+        String(s || "")
             .trim()
             .replace(/[\\/:*?"<>|]+/g, "-")
             .replace(/\s+/g, " ")
@@ -233,10 +244,10 @@ function sanitizeFilenameBase(t) {
 }
 
 function defaultFilenameBase() {
-    const t = new Date();
-    return `document-${String(t.getFullYear())}-${String(
-        t.getMonth() + 1
-    ).padStart(2, "0")}-${String(t.getDate()).padStart(2, "0")}`;
+    const d = new Date();
+    return `document-${String(d.getFullYear())}-${String(
+        d.getMonth() + 1
+    ).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
 function getFilenameBase() {
@@ -247,46 +258,70 @@ function getFilenameBase() {
 function downloadTxt() {
     if (!editor) return;
     const t = editor.value ?? "";
-    const e = new Blob([t], {
+    const blob = new Blob([t], {
         type: "text/plain;charset=utf-8",
     });
-    const n = URL.createObjectURL(e);
-    const o = document.createElement("a");
-    o.href = n;
-    o.download = `${getFilenameBase()}.txt`;
-    document.body.appendChild(o);
-    o.click();
-    o.remove();
-    window.setTimeout(() => URL.revokeObjectURL(n), 0);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${getFilenameBase()}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
-function setTheme(t) {
-    const e = t === "dark" ? "dark" : "light";
-    document.documentElement.setAttribute("data-theme", e);
+function systemPrefersDark() {
+    return !!window.matchMedia?.("(prefers-color-scheme: dark)")?.matches;
+}
+
+function setMetaThemeColorFor(theme) {
+    const light = document.querySelector(
+        'meta[name="theme-color"][media="(prefers-color-scheme: light)"]'
+    );
+    const dark = document.querySelector(
+        'meta[name="theme-color"][media="(prefers-color-scheme: dark)"]'
+    );
+    if (!light || !dark) return;
+
+    const isDark = theme === "dark";
+    const active = isDark ? dark : light;
+    const content =
+        active.getAttribute("content") || (isDark ? "#000000" : "#ffffff");
+
+    let plain = document.querySelector('meta[name="theme-color"]:not([media])');
+    if (!plain) {
+        plain = document.createElement("meta");
+        plain.setAttribute("name", "theme-color");
+        document.head.appendChild(plain);
+    }
+    plain.setAttribute("content", content);
+}
+
+function setTheme(theme) {
+    const t = theme === "dark" ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", t);
+    document.documentElement.style.colorScheme = "light dark";
+    setMetaThemeColorFor(t);
     try {
-        localStorage.setItem(STORAGE_KEY_THEME, e);
+        localStorage.setItem(STORAGE_KEY_THEME, t);
     } catch {}
     if (themeIcon)
-        themeIcon.src = e === "dark" ? "media/sun.svg" : "media/moon.svg";
+        themeIcon.src = t === "dark" ? "media/sun.svg" : "media/moon.svg";
 }
 
 function toggleTheme() {
-    setTheme(
-        (document.documentElement.getAttribute("data-theme") || "light") ===
-            "dark"
-            ? "light"
-            : "dark"
-    );
+    const cur = document.documentElement.getAttribute("data-theme") || "light";
+    setTheme(cur === "dark" ? "light" : "dark");
 }
 
 function inferInitialTheme() {
-    let t = null;
+    let saved = null;
     try {
-        t = localStorage.getItem(STORAGE_KEY_THEME);
+        saved = localStorage.getItem(STORAGE_KEY_THEME);
     } catch {}
-    if (t === "light" || t === "dark") return t;
-    const e = window.matchMedia?.("(prefers-color-scheme: dark)")?.matches;
-    return e ? "dark" : "light";
+    if (saved === "light" || saved === "dark") return saved;
+    return systemPrefersDark() ? "dark" : "light";
 }
 
 function scheduleSave() {
@@ -333,16 +368,16 @@ function scheduleTitleSave() {
     titleSaveTimer = window.setTimeout(saveTitle, 200);
 }
 
-function onKeydown(t) {
-    const e = navigator.platform?.toLowerCase().includes("mac");
-    const n = e ? t.metaKey : t.ctrlKey;
-    if (n && t.key.toLowerCase() === "s") {
-        t.preventDefault();
+function onKeydown(e) {
+    const isMac = navigator.platform?.toLowerCase().includes("mac");
+    const mod = isMac ? e.metaKey : e.ctrlKey;
+    if (mod && e.key.toLowerCase() === "s") {
+        e.preventDefault();
         downloadTxt();
         return;
     }
-    if (n && t.shiftKey && t.key.toLowerCase() === "c") {
-        t.preventDefault();
+    if (mod && e.shiftKey && e.key.toLowerCase() === "c") {
+        e.preventDefault();
         copyAll();
     }
 }
@@ -353,8 +388,8 @@ function requestUpload() {
     fileInput.click();
 }
 
-async function handleUploadFile(t) {
-    if (!t || !editor) return;
+async function handleUploadFile(file) {
+    if (!file || !editor) return;
     if (editor.value.trim().length > 0) {
         if (
             !window.confirm(
@@ -364,8 +399,8 @@ async function handleUploadFile(t) {
             return;
     }
     try {
-        const e = await t.text();
-        editor.value = e;
+        const t = await file.text();
+        editor.value = t;
         scheduleRender();
         scheduleSave();
         editor.focus();
@@ -375,32 +410,37 @@ async function handleUploadFile(t) {
     }
 }
 
-async function handleTitlePaste(t) {
+async function handleTitlePaste(e) {
     if (!titleEl) return;
-    t.preventDefault();
-    const e = t.clipboardData?.getData("text/plain") ?? "";
-    if (!e) return;
+    e.preventDefault();
+    const t = e.clipboardData?.getData("text/plain") ?? "";
+    if (!t) return;
     if (document.queryCommandSupported?.("insertText")) {
-        document.execCommand("insertText", false, e);
+        document.execCommand("insertText", false, t);
         return;
     }
-    const n = window.getSelection?.();
-    if (!n || n.rangeCount === 0) return;
-    n.deleteFromDocument();
-    n.getRangeAt(0).insertNode(document.createTextNode(e));
-    n.collapseToEnd();
+    const sel = window.getSelection?.();
+    if (!sel || sel.rangeCount === 0) return;
+    sel.deleteFromDocument();
+    sel.getRangeAt(0).insertNode(document.createTextNode(t));
+    sel.collapseToEnd();
 }
 
 function initSystemThemeListener() {
-    const t = window.matchMedia?.("(prefers-color-scheme: dark)");
-    if (!t) return;
-    t.addEventListener?.("change", () => {
-        let t = null;
+    const mql = window.matchMedia?.("(prefers-color-scheme: dark)");
+    if (!mql) return;
+
+    const onChange = () => {
+        let saved = null;
         try {
-            t = localStorage.getItem(STORAGE_KEY_THEME);
+            saved = localStorage.getItem(STORAGE_KEY_THEME);
         } catch {}
-        if (t !== "light" && t !== "dark") setTheme(inferInitialTheme());
-    });
+        if (saved !== "light" && saved !== "dark")
+            setTheme(systemPrefersDark() ? "dark" : "light");
+    };
+
+    mql.addEventListener?.("change", onChange);
+    mql.addListener?.(onChange);
 }
 
 function init() {
@@ -422,7 +462,14 @@ function init() {
 
     btnCopy?.addEventListener("click", copyAll);
     btnDownload?.addEventListener("click", downloadTxt);
-    btnTheme?.addEventListener("click", toggleTheme);
+    btnTheme?.addEventListener("click", () => {
+        setTheme(
+            (document.documentElement.getAttribute("data-theme") || "light") ===
+                "dark"
+                ? "light"
+                : "dark"
+        );
+    });
 
     btnUpload?.addEventListener("click", requestUpload);
     fileInput?.addEventListener("change", () => {
@@ -431,6 +478,7 @@ function init() {
     });
 
     if (titleEl) {
+        titleEl.addEventListener("input", scheduleTitleSave);
         titleEl.addEventListener("blur", saveTitle);
         titleEl.addEventListener("keydown", (e) => {
             if (e.key === "Enter") {
@@ -448,9 +496,7 @@ function init() {
     }
 
     initSystemThemeListener();
-    requestAnimationFrame(() => {
-        document.body.classList.add("page-ready");
-    });
+    requestAnimationFrame(() => document.body.classList.add("page-ready"));
 }
 
 init();

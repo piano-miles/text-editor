@@ -25,6 +25,7 @@
     --text: #111111;
     --theme-duration: 220ms;
     --theme-ease: ease;
+    color-scheme: light dark;
 }
 
 [data-theme="dark"] {
