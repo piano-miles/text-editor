@@ -4,46 +4,40 @@
 
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport" />
 
     <title>Minimal Text Editor</title>
-    <meta name="description"
-        content="A fast, minimal in-browser text editor with live stats, copy/download actions, and a light/dark theme." />
-    <meta name="robots" content="index,follow" />
-
-    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
-
-    <link rel="canonical" href="https://git.mileswaugh.com/text-editor/" />
-
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="Minimal Text Editor" />
-    <meta property="og:description"
-        content="A fast, minimal in-browser text editor with live stats, copy/download actions, and a light/dark theme." />
-    <meta property="og:url" content="https://git.mileswaugh.com/text-editor/" />
-    <meta property="og:image" content="https://git.mileswaugh.com/text-editor/media/og.png" />
-    <meta property="og:locale" content="en_US" />
-
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Minimal Text Editor" />
-    <meta name="twitter:description"
-        content="A fast, minimal in-browser text editor with live stats, copy/download actions, and a light/dark theme." />
-    <meta name="twitter:image" content="https://git.mileswaugh.com/text-editor/media/og.png" />
-
-    <link rel="icon" href="media/icon.svg" type="image/svg+xml" />
-    <link rel="icon" href="media/favicon.ico" sizes="any" />
-    <link rel="icon" href="media/favicon-32x32.png" sizes="32x32" type="image/png" />
-    <link rel="icon" href="media/favicon-16x16.png" sizes="16x16" type="image/png" />
-    <link rel="apple-touch-icon" href="media/apple-touch-icon.png" sizes="180x180" />
-
-    <link rel="manifest" href="site.webmanifest" />
-
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <meta
+        content="A fast, minimal in-browser text editor with live stats, copy/download actions, and a light/dark theme."
+        name="description" />
+    <meta content="index,follow" name="robots" />
+    <meta content="#ffffff" name="theme-color" />
+    <meta content="#000000" name="theme-color" />
+    <link href="https://git.mileswaugh.com/text-editor/" rel="canonical" />
+    <meta content="website" property="og:type" />
+    <meta content="Minimal Text Editor" property="og:title" />
+    <meta
+        content="A fast, minimal in-browser text editor with live stats, copy/download actions, and a light/dark theme."
+        property="og:description" />
+    <meta content="https://git.mileswaugh.com/text-editor/" property="og:url" />
+    <meta content="https://git.mileswaugh.com/text-editor/media/og.png" property="og:image" />
+    <meta content="en_US" property="og:locale" />
+    <meta content="summary_large_image" name="twitter:card" />
+    <meta content="Minimal Text Editor" name="twitter:title" />
+    <meta
+        content="A fast, minimal in-browser text editor with live stats, copy/download actions, and a light/dark theme."
+        name="twitter:description" />
+    <meta content="https://git.mileswaugh.com/text-editor/media/og.png" name="twitter:image" />
+    <link href="media/icon.svg" rel="icon" type="image/svg+xml" />
+    <link href="media/favicon.ico" rel="icon" sizes="any" />
+    <link href="media/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png" />
+    <link href="media/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png" />
+    <link href="media/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180" />
+    <link href="site.webmanifest" rel="manifest" />
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link href="https://fonts.gstatic.com" rel="preconnect" />
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
-
-    <link rel="stylesheet" href="style.css" />
-
+    <link href="style.css" rel="stylesheet" />
     <script type="application/ld+json">
             {
                 "@context": "https://schema.org",
@@ -61,7 +55,10 @@
     <main aria-label="Minimal Text Editor" class="app">
         <section aria-label="Editor" class="editor-card">
             <header class="editor-header">
-                <h1 class="title">Minimal Text Editor</h1>
+                <h1 aria-label="Document title" class="title" contenteditable="true" id="title" role="textbox"
+                    spellcheck="false">
+                    Minimal Text Editor
+                </h1>
             </header>
 
             <div aria-hidden="true" class="editor-divider"></div>
@@ -117,9 +114,16 @@
                     type="button">
                     <img alt="" height="20" src="media/download.svg" width="20" />
                 </button>
+                <button aria-label="Upload a text file" class="icon-btn upload-btn" id="btnUpload" title="Upload .txt"
+                    type="button">
+                    <img alt="" height="20" src="media/download.svg" width="20" />
+                </button>
                 <button aria-label="Toggle theme" class="icon-btn" id="btnTheme" title="Toggle theme" type="button">
                     <img alt="" height="20" id="themeIcon" src="media/moon.svg" width="20" />
                 </button>
+                <input
+                    accept=".txt,.md,.json,.yaml,.yml,.xml,.html,.css,.js,.ts,.jsx,.tsx,.py,.java,.c,.cpp,.rs,.go,.php,.sh,.sql,.svg"
+                    hidden="" id="fileInput" type="file" />
             </section>
         </aside>
     </main>
