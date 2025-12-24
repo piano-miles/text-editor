@@ -1,36 +1,42 @@
 :root {
     --bg: #ffffff;
-    --card: #ffffff;
-    --text: #111111;
-    --muted: #4b4b4b;
     --border: rgba(0, 0, 0, 0.12);
-    --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-    --ring: rgba(0, 0, 0, 0.22);
-    --radius: 16px;
-    --gap: 18px;
-    --theme-duration: 220ms;
-    --theme-ease: ease;
-    --hl-hash: #4574f6;
-    --hl-minus: #dc2f2f;
-    --hl-plus: #17a54b;
-    --hl-done: #6b7280;
-    --hl-star: #ca8a04;
-    --hl-quote: #9176bd;
-    --hl-comment: #9ca3af;
+    --card: #ffffff;
+    --caret: #3842b4;
     --editor-font-size: 15px;
     --editor-line-height: 1.6;
     --editor-pad: 6px 4px 4px;
+    --gap: 18px;
+    --hl-comment: #9ca3af;
+    --hl-done: #6b7280;
+    --hl-hash: #4574f6;
+    --hl-minus: #dc2f2f;
+    --hl-plus: #17a54b;
+    --hl-quote: #9176bd;
+    --hl-star: #ca8a04;
+    --muted: #4b4b4b;
+    --radius: 16px;
+    --ring: rgba(0, 0, 0, 0.22);
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    --text: #111111;
+    --theme-duration: 220ms;
+    --theme-ease: ease;
+    --sel-bg-focused: rgba(72, 126, 250, 0.451);
+    --sel-bg-blur: rgba(151, 151, 151, 0.179);
 }
 
 [data-theme="dark"] {
     --bg: #000000;
-    --card: #212225;
-    --text: #f5f5f5;
-    --muted: #cfcfcf;
     --border: rgba(255, 255, 255, 0.14);
-    --shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
-    --ring: rgba(255, 255, 255, 0.22);
+    --card: #212225;
+    --caret: #e5ce67;
     --hl-comment: #7a7f87;
+    --muted: #cfcfcf;
+    --ring: rgba(255, 255, 255, 0.22);
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+    --text: #f5f5f5;
+    --sel-bg-focused: rgba(215, 192, 92, 0.48);
+    --sel-bg-blur: rgba(192, 192, 192, 0.127);
 }
 
 * {
@@ -155,9 +161,14 @@ body {
     outline: 0;
     background-color: transparent;
     color: transparent;
-    caret-color: var(--text);
+    caret-color: var(--caret);
     -webkit-text-fill-color: transparent;
 }
+
+.editor-highlight {
+    caret-color: transparent;
+}
+
 
 .editor::placeholder {
     color: var(--muted);
@@ -165,20 +176,22 @@ body {
     -webkit-text-fill-color: var(--muted);
 }
 
-.editor::selection {
-    background: rgba(59, 130, 246, 0.25);
+/* Focused selection */
+.editor:focus::selection {
+    background: var(--sel-bg-focused);
 }
 
-[data-theme="dark"] .editor::selection {
-    background: rgba(59, 130, 246, 0.35);
+.editor:focus::-moz-selection {
+    background: var(--sel-bg-focused);
 }
 
-.editor::-moz-selection {
-    background: rgba(59, 130, 246, 0.25);
+/* Unfocused selection */
+.editor:not(:focus)::selection {
+    background: var(--sel-bg-blur);
 }
 
-[data-theme="dark"] .editor::-moz-selection {
-    background: rgba(59, 130, 246, 0.35);
+.editor:not(:focus)::-moz-selection {
+    background: var(--sel-bg-blur);
 }
 
 .tok-hash {
