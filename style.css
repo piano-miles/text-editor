@@ -1,3 +1,12 @@
+html {
+    background-color: var(--bg);
+}
+
+html.theme-boot,
+html.theme-boot * {
+    transition: none !important;
+}
+
 :root {
     --bg: #ffffff;
     --border: rgba(0, 0, 0, 0.12);

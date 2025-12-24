@@ -444,6 +444,7 @@ function initSystemThemeListener() {
 }
 
 function init() {
+    document.documentElement.classList.remove("theme-boot");
     setTheme(inferInitialTheme());
     restoreText();
     restoreTitle();
