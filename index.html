@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html data-theme="light" lang="en">
+<html lang="en">
 
 <head>
     <meta charset="utf-8" />
@@ -37,6 +37,17 @@
     <link href="https://fonts.googleapis.com" rel="preconnect" />
     <link href="https://fonts.gstatic.com" rel="preconnect" />
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <script>
+        (function () {
+            try {
+                const saved = localStorage.getItem("mte_theme_v1"); // same key you use
+                const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+                const theme = (saved === "light" || saved === "dark") ? saved : (prefersDark ? "dark" : "light");
+                document.documentElement.setAttribute("data-theme", theme);
+                document.documentElement.style.colorScheme = "light dark";
+            } catch { }
+        })();
+    </script>
     <link href="style.css" rel="stylesheet" />
     <script type="application/ld+json">
             {
